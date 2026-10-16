@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 
-import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:dio_log/dio_log.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -37,9 +37,9 @@ class Http {
     _dio = Dio(
       BaseOptions(
         baseUrl: host,
-        connectTimeout: 50000,
-        receiveTimeout: 50000,
-        sendTimeout: 50000,
+        connectTimeout: const Duration(milliseconds: 50000),
+        receiveTimeout: const Duration(milliseconds: 50000),
+        sendTimeout: const Duration(milliseconds: 50000),
         contentType: "application/json",
       ),
     );
@@ -50,7 +50,7 @@ class Http {
       host,
       index,
     ));
-    (_dio?.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (HttpClient client) {
+    (_dio?.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate = (HttpClient client) {
       client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
       return client;
     };
@@ -76,7 +76,7 @@ class Http {
       _init();
       var response = await _dio!.get(uri, queryParameters: json);
       return decodeResponse<T>(response, serializationName, compute);
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       return exceptionHandler<T>(e, uri);
     }
   }
@@ -96,7 +96,7 @@ class Http {
         serializationName,
         compute,
       );
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       return exceptionHandler<T>(e, uri);
     }
   }
@@ -116,7 +116,7 @@ class Http {
         serializationName,
         compute,
       );
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       return exceptionHandler<T>(e, uri);
     }
   }
@@ -135,7 +135,7 @@ class Http {
         serializationName,
         compute,
       );
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       return exceptionHandler<T>(e, uri);
     }
   }
@@ -151,7 +151,7 @@ class Http {
     }
   }
 
-  HttpResponse<T> exceptionHandler<T>(DioError e, String path) {
+  HttpResponse<T> exceptionHandler<T>(DioException e, String path) {
     try {
       logger.e(e);
       if (e.response?.statusCode == 401 && !Url.inWhiteList(path)) {

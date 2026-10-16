@@ -19,7 +19,7 @@ import 'package:qinglong_app/utils/extension.dart';
 import 'package:qinglong_app/utils/sp_utils.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:local_auth_android/local_auth_android.dart';
-import 'package:local_auth_ios/local_auth_ios.dart';
+import 'package:local_auth_darwin/local_auth_darwin.dart';
 import 'package:quick_actions/quick_actions.dart';
 
 final getIt = GetIt.instance;
@@ -116,8 +116,11 @@ void main() async {
     );
   };
   if (Platform.isAndroid) {
-    SystemUiOverlayStyle style =
-        const SystemUiOverlayStyle(statusBarColor: Colors.transparent);
+    SystemUiOverlayStyle style = const SystemUiOverlayStyle(
+        statusBarColor: Color(0xfff5f5f5),
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark);
     SystemChrome.setSystemUIOverlayStyle(style);
   }
 }
@@ -200,7 +203,13 @@ class QlAppState extends ConsumerState<QlApp> with WidgetsBindingObserver {
         Locale('en', 'US'),
       ],
       theme: ref.watch<ThemeViewModel>(themeProvider).currentTheme,
-      home: const MultiAccountPage(),
+      // 将常驻首页树与键盘 insets 隔离：键盘弹出时不再逐帧重建底部保活页面（修复输入卡顿）
+      // push 出的二级页面不受影响，仍正常避让键盘
+      home: MediaQuery.removeViewInsets(
+        removeBottom: true,
+        context: context,
+        child: const MultiAccountPage(),
+      ),
       // home: LoginPage(),
     );
   }

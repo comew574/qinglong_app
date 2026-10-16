@@ -1076,8 +1076,8 @@ class OtherPageState extends ConsumerState<OtherPage>
   Future<void> loadPoet() async {
     try {
       Dio dio = Dio(BaseOptions(
-        receiveTimeout: 10000,
-        connectTimeout: 10000,
+        receiveTimeout: const Duration(milliseconds: 10000),
+        connectTimeout: const Duration(milliseconds: 10000),
       ));
 
       if (!SpUtil.haveKey(spPoetToken)) {

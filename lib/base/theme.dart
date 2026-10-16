@@ -73,9 +73,17 @@ class ThemeViewModel extends ChangeNotifier {
     if (Platform.isAndroid) {
       SystemUiOverlayStyle style;
       if (_themeMode == modeDark) {
-        style = const SystemUiOverlayStyle(statusBarColor: Colors.transparent, systemNavigationBarColor: Colors.black);
+        style = const SystemUiOverlayStyle(
+            statusBarColor: Color(0xff111111),
+            statusBarIconBrightness: Brightness.light,
+            systemNavigationBarColor: Colors.black,
+            systemNavigationBarIconBrightness: Brightness.light);
       } else {
-        style = const SystemUiOverlayStyle(statusBarColor: Colors.transparent, systemNavigationBarColor: Colors.white);
+        style = const SystemUiOverlayStyle(
+            statusBarColor: Color(0xfff5f5f5),
+            statusBarIconBrightness: Brightness.dark,
+            systemNavigationBarColor: Colors.white,
+            systemNavigationBarIconBrightness: Brightness.dark);
       }
       SystemChrome.setSystemUIOverlayStyle(style);
     }
@@ -87,7 +95,7 @@ class ThemeViewModel extends ChangeNotifier {
   get themeMode => _themeMode;
 
   ThemeData getWhiteTheme() {
-    return ThemeData.light().copyWith(
+    return ThemeData.light(useMaterial3: false).copyWith(
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),
@@ -165,7 +173,7 @@ class ThemeViewModel extends ChangeNotifier {
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: _primaryColor,
       ),
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         labelStyle: const TextStyle(
           fontSize: 14,
         ),
@@ -179,8 +187,7 @@ class ThemeViewModel extends ChangeNotifier {
         ),
       ),
       hintColor: const Color(0xffBBBBBB),
-      toggleableActiveColor: _primaryColor,
-      checkboxTheme: CheckboxThemeData(
+            checkboxTheme: CheckboxThemeData(
         checkColor: MaterialStateProperty.resolveWith(
           (Set<MaterialState> states) {
             if (states.contains(MaterialState.disabled)) {
@@ -202,7 +209,7 @@ class ThemeViewModel extends ChangeNotifier {
   }
 
   ThemeData getLightTheme() {
-    return ThemeData.light().copyWith(
+    return ThemeData.light(useMaterial3: false).copyWith(
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),
@@ -282,7 +289,7 @@ class ThemeViewModel extends ChangeNotifier {
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: _primaryColor,
       ),
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         labelStyle: const TextStyle(
           fontSize: 14,
         ),
@@ -296,8 +303,7 @@ class ThemeViewModel extends ChangeNotifier {
         ),
       ),
       hintColor: const Color(0xffBBBBBB),
-      toggleableActiveColor: _primaryColor,
-      checkboxTheme: CheckboxThemeData(
+            checkboxTheme: CheckboxThemeData(
         checkColor: MaterialStateProperty.resolveWith(
           (Set<MaterialState> states) {
             if (states.contains(MaterialState.disabled)) {
@@ -319,7 +325,7 @@ class ThemeViewModel extends ChangeNotifier {
   }
 
   ThemeData getDartTheme() {
-    return ThemeData.dark().copyWith(
+    return ThemeData.dark(useMaterial3: false).copyWith(
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),
@@ -393,7 +399,7 @@ class ThemeViewModel extends ChangeNotifier {
           borderRadius: BorderRadius.circular(4),
         ),
       ),
-      tabBarTheme: const TabBarTheme(
+      tabBarTheme: const TabBarThemeData(
         labelStyle: TextStyle(
           fontSize: 14,
         ),
@@ -407,8 +413,7 @@ class ThemeViewModel extends ChangeNotifier {
         secondary: _primaryColor,
         primary: _primaryColor,
       ),
-      toggleableActiveColor: _primaryColor,
-      checkboxTheme: CheckboxThemeData(
+            checkboxTheme: CheckboxThemeData(
         checkColor: MaterialStateProperty.resolveWith(
           (Set<MaterialState> states) {
             if (states.contains(MaterialState.disabled)) {

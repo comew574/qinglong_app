@@ -244,7 +244,7 @@ class AppKeyDetailCell extends ConsumerWidget {
                         onTap: () {
                           Clipboard.setData(
                             ClipboardData(
-                              text: desc,
+                              text: desc!,
                             ),
                           );
                           "已复制到剪切板".toast();

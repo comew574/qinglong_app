@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="work.newtab.qinglong">
+>
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
@@ -17,7 +17,7 @@
         android:label="青龙客户端">
 
         <activity
-            android:name=".MainActivity"
+            android:name="work.newtab.qinglong.MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:exported="true"
             android:hardwareAccelerated="true"
@@ -42,5 +42,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- 关闭 Impeller 回退 Skia：修复小米设备键盘弹出动画卡顿 -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
     </application>
 </manifest>

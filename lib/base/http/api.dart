@@ -316,9 +316,10 @@ class Api {
   }
 
   Future<HttpResponse<String>> content(String name) async {
+    // /configs/detail?path=<name>
     return await getIt<Http>(instanceName: index.toString()).get<String>(
-      getIt<Url>(instanceName: index.toString()).configContent + name,
-      null,
+      getIt<Url>(instanceName: index.toString()).configContent,
+      {"path": name},
     );
   }
 
@@ -468,6 +469,9 @@ class Api {
     return await getIt<Http>(instanceName: index.toString()).post<NullResponse>(
       getIt<Url>(instanceName: index.toString()).scriptDetail,
       {
+        // 后端 POST /scripts 的 Joi 校验要求 filename 必填；
+        // 创建文件夹时官方前端同样传 filename（= 文件夹名）+ directory。
+        "filename": fileName,
         "directory": fileName,
         "path": path,
       },
@@ -482,9 +486,11 @@ class Api {
   }
 
   Future<HttpResponse<String>> scriptDetail(String name, String? path) async {
+    // /scripts/detail?file=<name>&path=<path>
     return await getIt<Http>(instanceName: index.toString()).get<String>(
-      getIt<Url>(instanceName: index.toString()).scriptDetailForReadFile + name,
+      getIt<Url>(instanceName: index.toString()).scriptDetailForReadFile,
       {
+        "file": name,
         "path": path,
       },
     );

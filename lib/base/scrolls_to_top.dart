@@ -121,6 +121,9 @@ class _FakeScrollContext extends ScrollContext {
   BuildContext get notificationContext => _context;
 
   @override
+  double get devicePixelRatio => MediaQuery.devicePixelRatioOf(_context);
+
+  @override
   void saveOffset(double offset) {}
 
   @override

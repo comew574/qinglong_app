@@ -51,20 +51,104 @@ class CodeMirrorViewState extends CodeMirrorViewImplState<CodeMirrorView> {
 
   Future<void> showSearchBar() async {
     if (isShowSearch) {
-      await _controller?.runJavascript(
+      await _controller?.runJavaScript(
         'clearSearchText()',
       );
     } else {
-      await _controller?.runJavascript(
+      await _controller?.runJavaScript(
         'searchText()',
       );
     }
     isShowSearch = !isShowSearch;
   }
 
+  WebViewController _createController(String rawHtml, double width, double height) {
+    final controller = WebViewController();
+    controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    controller.setBackgroundColor(ref.watch(themeProvider).themeColor.codeBgColor());
+    controller.setNavigationDelegate(
+      NavigationDelegate(
+        onPageFinished: (url) {
+          controller.runJavaScript(
+            'editor.setSize(${width},${height})',
+          );
+          widget.onCreate(EditorController(
+            setOptions: (val) async {
+              readOnly = val.readOnly;
+              controller.runJavaScript(
+                'editor.setSize(${width},${height})',
+              );
+
+              await controller.runJavaScript(
+                'editor.setOption("mode", "${val.mode}")',
+              );
+              await controller.runJavaScript(
+                'editor.setOption("theme", "${val.theme}")',
+              );
+              await controller.runJavaScript(
+                'editor.setOption("readOnly", ${val.readOnly ? '\"nocursor\"' : false})',
+              );
+
+              await controller.runJavaScript(
+                'editor.setOption("lineNumbers", ${val.showLineNumber})',
+              );
+              await Future.delayed(
+                const Duration(milliseconds: 200),
+              );
+              await controller.runJavaScript(
+                'editor.refresh()',
+              );
+              await EasyLoading.dismiss();
+              if (widget.options.mode != val.mode || widget.options.theme != val.theme) {
+                await controller.loadRequest(Uri.parse(getHtml(rawHtml)));
+              }
+            },
+            setValue: (val) async {
+              TextPainter painter = TextPainter(
+                text: TextSpan(
+                  text: val,
+                  style: const TextStyle(
+                    fontSize: 15,
+                  ),
+                ),
+                textDirection: TextDirection.ltr,
+              );
+              painter.layout(
+                maxWidth: MediaQuery.of(context).size.width,
+              );
+              isLoaded = true;
+              final raw = Uri.encodeComponent(val);
+              controller.runJavaScript('editor.setValue(decodeURIComponent("$raw"))');
+            },
+            refresh: () async {
+              const delay = Duration(milliseconds: 50);
+              await Future.delayed(delay);
+              controller.runJavaScript(
+                'editor.refresh()',
+              );
+            },
+          ));
+        },
+      ),
+    );
+    controller.addJavaScriptChannel(
+      'MessageInvoker',
+      onMessageReceived: (event) => widget.onValue(event.message),
+    );
+    if (MultiAccountPageState.useAction().isEmpty) {
+      if (!isLoadedJs) {
+        isLoadedJs = true;
+        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+          EasyLoading.show(status: "加载中");
+        });
+      }
+    }
+    controller.loadRequest(Uri.parse(getHtml(rawHtml)));
+    return controller;
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (Platform.isAndroid) WebView.platform = SurfaceAndroidWebView();
     return FutureBuilder<String>(
         future: rootBundle.loadString('assets/codemirror.html'),
         builder: (context, snapshot) {
@@ -74,95 +158,19 @@ class CodeMirrorViewState extends CodeMirrorViewImplState<CodeMirrorView> {
           return LayoutBuilder(
             builder: (context, dimens) {
               return KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
+                final controller = _controller ??= _createController(
+                  snapshot.data ?? "",
+                  dimens.maxWidth,
+                  dimens.maxHeight,
+                );
                 if (isLoaded) {
-                  _controller?.runJavascript(
+                  controller.runJavaScript(
                     'editor.setSize(${dimens.maxWidth},${dimens.maxHeight})',
                   );
                 }
-
-                return WebView(
-                  backgroundColor: ref.watch(themeProvider).themeColor.codeBgColor(),
-                  debuggingEnabled: true,
-                  initialUrl: getHtml(snapshot.data ?? ""),
-                  onWebViewCreated: (controller) {
-                    if (MultiAccountPageState.useAction().isEmpty) {
-                      if (!isLoadedJs) {
-                        isLoadedJs = true;
-                        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                          EasyLoading.show(status: "加载中");
-                        });
-                      }
-                    }
-                    _controller = controller;
-                  },
-                  onPageFinished: (url) {
-                    _controller?.runJavascript(
-                      'editor.setSize(${dimens.maxWidth},${dimens.maxHeight})',
-                    );
-                    widget.onCreate(EditorController(
-                      setOptions: (val) async {
-                        readOnly = val.readOnly;
-                        _controller?.runJavascript(
-                          'editor.setSize(${dimens.maxWidth},${dimens.maxHeight})',
-                        );
-
-                        await _controller?.runJavascript(
-                          'editor.setOption("mode", "${val.mode}")',
-                        );
-                        await _controller?.runJavascript(
-                          'editor.setOption("theme", "${val.theme}")',
-                        );
-                        await _controller?.runJavascript(
-                          'editor.setOption("readOnly", ${val.readOnly ? '\"nocursor\"' : false})',
-                        );
-
-                        await _controller?.runJavascript(
-                          'editor.setOption("lineNumbers", ${val.showLineNumber})',
-                        );
-                        await Future.delayed(
-                          const Duration(milliseconds: 200),
-                        );
-                        await _controller?.runJavascript(
-                          'editor.refresh()',
-                        );
-                        await EasyLoading.dismiss();
-                        if (widget.options.mode != val.mode || widget.options.theme != val.theme) {
-                          await _controller?.loadUrl(getHtml(snapshot.data ?? ""));
-                        }
-                      },
-                      setValue: (val) async {
-                        TextPainter painter = TextPainter(
-                          text: TextSpan(
-                            text: val,
-                            style: const TextStyle(
-                              fontSize: 15,
-                            ),
-                          ),
-                          textDirection: TextDirection.ltr,
-                        );
-                        painter.layout(
-                          maxWidth: MediaQuery.of(context).size.width,
-                        );
-                        isLoaded = true;
-                        final raw = Uri.encodeComponent(val);
-                        _controller?.runJavascript('editor.setValue(decodeURIComponent("$raw"))');
-                      },
-                      refresh: () async {
-                        const delay = Duration(milliseconds: 50);
-                        await Future.delayed(delay);
-                        _controller?.runJavascript(
-                          'editor.refresh()',
-                        );
-                      },
-                    ));
-                  },
-                  javascriptMode: JavascriptMode.unrestricted,
-                  javascriptChannels: {
-                    JavascriptChannel(
-                      name: 'MessageInvoker',
-                      onMessageReceived: (event) => widget.onValue(event.message),
-                    ),
-                  },
+                controller.setBackgroundColor(ref.watch(themeProvider).themeColor.codeBgColor());
+                return WebViewWidget(
+                  controller: controller,
                 );
               });
             },

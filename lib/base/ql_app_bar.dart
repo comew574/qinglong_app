@@ -7,7 +7,7 @@ import 'package:qinglong_app/module/others/change_account_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qinglong_app/utils/sp_utils.dart';
 
-class QlAppBar extends ConsumerWidget with PreferredSizeWidget {
+class QlAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final String title;
   final List<Widget>? actions;
   final VoidCallback? backCall;

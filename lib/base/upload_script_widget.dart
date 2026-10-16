@@ -252,9 +252,9 @@ class UploadScriptWidgetState extends ConsumerState<UploadScriptWidget>
   }
 
   void pickLocalFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-    if (result != null && result.files.isNotEmpty && result.files.single.path != null) {
-      file = File(result.files.single.path!);
+    final result = await FilePicker.pickFiles();
+    if (result.isNotEmpty && result.first.path != null) {
+      file = File(result.first.path!);
       fileName = null;
 
       if (file == null) return;

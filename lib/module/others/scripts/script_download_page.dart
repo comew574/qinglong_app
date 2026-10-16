@@ -99,9 +99,9 @@ class _ScriptDownloadPageState extends ConsumerState<ScriptDownloadPage> {
     try {
       var _dio = Dio(
         BaseOptions(
-          connectTimeout: 50000,
-          receiveTimeout: 50000,
-          sendTimeout: 50000,
+          connectTimeout: const Duration(milliseconds: 50000),
+          receiveTimeout: const Duration(milliseconds: 50000),
+          sendTimeout: const Duration(milliseconds: 50000),
           contentType: "application/json",
         ),
       );

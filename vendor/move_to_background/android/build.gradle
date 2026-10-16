@@ -1,0 +1,32 @@
+group 'com.sayegh.move_to_background'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    repositories {
+        google()
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    namespace 'com.sayegh.move_to_background'
+    compileSdk 36
+
+    defaultConfig {
+        minSdkVersion 21
+    }
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}

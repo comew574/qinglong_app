@@ -205,9 +205,9 @@ class _AddConfigPageState extends ConsumerState<AddConfigPage> {
   }
 
   void pickLocalFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-    if (result != null && result.files.isNotEmpty && result.files.single.path != null) {
-      file = File(result.files.single.path!);
+    final result = await FilePicker.pickFiles();
+    if (result.isNotEmpty && result.first.path != null) {
+      file = File(result.first.path!);
 
       if (file == null) return;
       _nameController.text = getFileName();

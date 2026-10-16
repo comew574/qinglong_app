@@ -38,7 +38,7 @@ class TreeViewController {
   final String? selectedKey;
 
   TreeViewController({
-    this.children: const [],
+    this.children= const [],
     this.selectedKey,
   });
 
@@ -59,7 +59,7 @@ class TreeViewController {
   ///   controller = controller.loadJSON(json: jsonString);
   /// });
   /// ```
-  TreeViewController loadJSON<T>({String json: '[]'}) {
+  TreeViewController loadJSON<T>({String json = '[]'}) {
     List jsonList = jsonDecode(json);
     List<Map<String, dynamic>> list = List<Map<String, dynamic>>.from(jsonList);
     return loadMap<T>(list: list);
@@ -73,7 +73,7 @@ class TreeViewController {
   ///   controller = controller.loadMap(map: dataMap);
   /// });
   /// ```
-  TreeViewController loadMap<T>({List<Map<String, dynamic>> list: const []}) {
+  TreeViewController loadMap<T>({List<Map<String, dynamic>> list = const []}) {
     List<ScriptData> treeData =
         list.map((Map<String, dynamic> item) => ScriptData.fromMap(item)).toList();
     return TreeViewController(
@@ -99,7 +99,7 @@ class TreeViewController {
     ScriptData newNode, {
     ScriptData? parent,
     int? index,
-    InsertMode mode: InsertMode.append,
+    InsertMode mode = InsertMode.append,
   }) {
     List<ScriptData> _data =
         addNode(key, newNode, parent: parent, mode: mode, index: index);
@@ -392,7 +392,7 @@ class TreeViewController {
     ScriptData newNode, {
     ScriptData? parent,
     int? index,
-    InsertMode mode: InsertMode.append,
+    InsertMode mode = InsertMode.append,
   }) {
     List<ScriptData> __children = parent == null ? this.children : parent.children;
     return __children.map((ScriptData child) {
