@@ -23,6 +23,13 @@ class Api {
   Api(this.index);
 
   Future<HttpResponse<LogDelBean>> logDel() async {
+    // 青龙 2.23+：读 /system/config，频率在 info.logRemoveFrequency
+    if (getIt<SystemBean>(instanceName: index.toString()).isUpperVersion2_23_0()) {
+      return await getIt<Http>(instanceName: index.toString()).get<LogDelBean>(
+        getIt<Url>(instanceName: index.toString()).systemConfig,
+        {},
+      );
+    }
     return await getIt<Http>(instanceName: index.toString()).get<LogDelBean>(
       getIt<Url>(instanceName: index.toString()).logDel,
       {},
@@ -30,6 +37,13 @@ class Api {
   }
 
   Future<HttpResponse<String>> logDelTime(int time) async {
+    // 青龙 2.23+：PUT /system/config/log-remove-frequency
+    if (getIt<SystemBean>(instanceName: index.toString()).isUpperVersion2_23_0()) {
+      return await getIt<Http>(instanceName: index.toString()).put<String>(
+        getIt<Url>(instanceName: index.toString()).logRemoveFrequency,
+        {"logRemoveFrequency": time},
+      );
+    }
     return await getIt<Http>(instanceName: index.toString()).put<String>(
       getIt<Url>(instanceName: index.toString()).logDel,
       {"frequency": time},
@@ -415,17 +429,28 @@ class Api {
   }
 
   Future<HttpResponse<String>> taskLogDetail(String name, String path) async {
+    // 青龙 2.23+：/logs/detail?file=<文件名>&path=<目录>
+    if (getIt<SystemBean>(instanceName: index.toString()).isUpperVersion2_23_0()) {
+      return await getIt<Http>(instanceName: index.toString()).get<String>(
+        getIt<Url>(instanceName: index.toString()).taskLogDetailNew,
+        {
+          "file": name,
+          "path": path,
+        },
+      );
+    }
+    // 青龙 2.13 ~ 2.22：/logs/<文件名>?path=<目录>
     if (getIt<SystemBean>(instanceName: index.toString()).isUpperVersion2_13_0()) {
       return await getIt<Http>(instanceName: index.toString()).get<String>(
         getIt<Url>(instanceName: index.toString()).taskLogDetail + name + "?path=" + path,
         null,
       );
-    } else {
-      return await getIt<Http>(instanceName: index.toString()).get<String>(
-        getIt<Url>(instanceName: index.toString()).taskLogDetail + path + "/" + name,
-        null,
-      );
     }
+    // 青龙 < 2.13：/logs/<目录>/<文件名>
+    return await getIt<Http>(instanceName: index.toString()).get<String>(
+      getIt<Url>(instanceName: index.toString()).taskLogDetail + path + "/" + name,
+      null,
+    );
   }
 
   Future<HttpResponse<List<ScriptData>>> scripts() async {
@@ -628,4 +653,202 @@ class Api {
       {},
     );
   }
+
+  // ═══════════════════════════════════════════════
+  // 青龙 2.23.0 新增接口
+  // 统一用 String 返回（原始 JSON），需要解析时在调用侧处理。
+  // 低于 2.23 的青龙直接返回失败，不发起请求。
+  // ═══════════════════════════════════════════════
+
+  bool _need223() =>
+      getIt<SystemBean>(instanceName: index.toString()).isUpperVersion2_23_0();
+
+  HttpResponse<String> _tooOld() =>
+      HttpResponse<String>(success: false, message: "需要青龙 2.23.0 及以上版本", code: 426);
+
+  // ── 脚本历史版本 ──
+  Future<HttpResponse<String>> scriptHistoryList(String path, String file) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).get<String>(
+      getIt<Url>(instanceName: index.toString()).scriptHistory,
+      {"path": path, "file": file},
+    );
+  }
+
+  Future<HttpResponse<String>> scriptHistoryDetail(String path, String file, String id) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).get<String>(
+      getIt<Url>(instanceName: index.toString()).scriptHistoryDetail,
+      {"path": path, "file": file, "id": id},
+    );
+  }
+
+  Future<HttpResponse<String>> restoreScriptHistory(
+      String path, String file, String id, String expectedHash) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).put<String>(
+      getIt<Url>(instanceName: index.toString()).scriptHistoryRestore,
+      {"path": path, "filename": file, "id": id, "expectedHash": expectedHash},
+    );
+  }
+
+  // ── 脚本操作 ──
+  Future<HttpResponse<String>> renameScript(String oldName, String newName, String path) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).put<String>(
+      getIt<Url>(instanceName: index.toString()).scriptRename,
+      {"filename": oldName, "newFilename": newName, "path": path},
+    );
+  }
+
+  Future<HttpResponse<String>> runScript(String name, String path) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).put<String>(
+      getIt<Url>(instanceName: index.toString()).scriptRun,
+      {"filename": name, "path": path},
+    );
+  }
+
+  Future<HttpResponse<String>> stopScript(String name, String path, int pid) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).put<String>(
+      getIt<Url>(instanceName: index.toString()).scriptStop,
+      {"filename": name, "path": path, "pid": pid},
+    );
+  }
+
+  Future<HttpResponse<String>> downloadScript(String name, String path) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).post<String>(
+      getIt<Url>(instanceName: index.toString()).scriptDownload,
+      {"filename": name, "path": path},
+    );
+  }
+
+  // ── 任务详情 / 实例 ──
+  Future<HttpResponse<String>> taskDetailNew(String id) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).get<String>(
+      getIt<Url>(instanceName: index.toString()).taskDetailNew,
+      {"id": id},
+    );
+  }
+
+  Future<HttpResponse<String>> cronInstances(String id) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).get<String>(
+      getIt<Url>(instanceName: index.toString()).cronInstances(id),
+      null,
+    );
+  }
+
+  Future<HttpResponse<String>> stopCronInstance(String id, String instanceId) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).post<String>(
+      getIt<Url>(instanceName: index.toString()).cronInstanceStop(id, instanceId),
+      {},
+    );
+  }
+
+  // ── 环境变量补充 ──
+  Future<HttpResponse<String>> renameEnv(String id, String name) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).put<String>(
+      getIt<Url>(instanceName: index.toString()).envName,
+      {"id": id, "name": name},
+    );
+  }
+
+  Future<HttpResponse<String>> pinEnv(List<String> ids) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).put<String>(
+      getIt<Url>(instanceName: index.toString()).envPin,
+      ids,
+    );
+  }
+
+  Future<HttpResponse<String>> unpinEnv(List<String> ids) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).put<String>(
+      getIt<Url>(instanceName: index.toString()).envUnpin,
+      ids,
+    );
+  }
+
+  // ── 系统 ──
+  Future<HttpResponse<String>> systemLog() async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).get<String>(
+      getIt<Url>(instanceName: index.toString()).systemLog,
+      null,
+    );
+  }
+
+  Future<HttpResponse<String>> setTimezone(String tz) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).put<String>(
+      getIt<Url>(instanceName: index.toString()).systemTimezone,
+      {"timezone": tz},
+    );
+  }
+
+  Future<HttpResponse<String>> setLang(String lang) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).put<String>(
+      getIt<Url>(instanceName: index.toString()).systemLang,
+      {"lang": lang},
+    );
+  }
+
+  Future<HttpResponse<String>> setPanelTitle(String title) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).put<String>(
+      getIt<Url>(instanceName: index.toString()).systemPanelTitle,
+      {"title": title},
+    );
+  }
+
+  // ── Dashboard ──
+  Future<HttpResponse<String>> dashboardOverview() async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).get<String>(
+      getIt<Url>(instanceName: index.toString()).dashboardOverview,
+      null,
+    );
+  }
+
+  Future<HttpResponse<String>> dashboardTrend(String days) async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).get<String>(
+      getIt<Url>(instanceName: index.toString()).dashboardTrend,
+      {"days": days},
+    );
+  }
+
+  // ── 用户 ──
+  Future<HttpResponse<String>> logout() async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).post<String>(
+      getIt<Url>(instanceName: index.toString()).userLogout,
+      {},
+    );
+  }
+
+  Future<HttpResponse<String>> ipBlacklist() async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).get<String>(
+      getIt<Url>(instanceName: index.toString()).ipBlacklist,
+      null,
+    );
+  }
+
+  // ── 配置 ──
+  Future<HttpResponse<String>> configSamples() async {
+    if (!_need223()) return _tooOld();
+    return await getIt<Http>(instanceName: index.toString()).get<String>(
+      getIt<Url>(instanceName: index.toString()).configSamples,
+      null,
+    );
+  }
+
 }

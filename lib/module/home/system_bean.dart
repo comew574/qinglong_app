@@ -138,6 +138,37 @@ class SystemBean {
     }
   }
 
+  //2.23.0 以及以上版本日志详情接口改为 /logs/detail?file=&path=
+  bool isUpperVersion2_23_0() {
+    try {
+      List<String>? version1 = version?.split("\.");
+
+      String f = version1?[0] ?? "2";
+      String s = version1?[1] ?? "10";
+      String t = version1?[2] ?? "0";
+
+      if (f.length == 1) {
+        f = "0$f";
+      }
+      if (s.length == 1) {
+        s = "0$s";
+      }
+      if (t.length == 1) {
+        t = "0$t";
+      }
+
+      String tempSum = "$f$s$t";
+
+      if ((int.tryParse(tempSum) ?? 1) >= 022300) {
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   //2.14.0 以及列表不用排序
   bool isUpperVersion2_14_0() {
     try {

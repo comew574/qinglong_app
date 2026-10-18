@@ -53,15 +53,20 @@ class Data {}
 class Info {
   int? frequency;
 
-  Info({this.frequency});
+  // 青龙 2.23+ 改为 info.logRemoveFrequency
+  int? logRemoveFrequency;
+
+  Info({this.frequency, this.logRemoveFrequency});
 
   Info.fromJson(Map<String, dynamic> json) {
     frequency = json['frequency'];
+    logRemoveFrequency = json['logRemoveFrequency'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['frequency'] = this.frequency;
+    data['logRemoveFrequency'] = this.logRemoveFrequency;
     return data;
   }
 }
