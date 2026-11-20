@@ -181,6 +181,9 @@ class Url {
   get userAvatar => getIt<UserInfoViewModel>(instanceName: index.toString()).useSecretLogined ? "/open/user/avatar" : "/api/user/avatar";
   get ipBlacklist => getIt<UserInfoViewModel>(instanceName: index.toString()).useSecretLogined ? "/open/user/ip-blacklist" : "/api/user/ip-blacklist";
 
+  // 青龙 2.24.0 新增：通知审计日志
+  get notifyLog => getIt<UserInfoViewModel>(instanceName: index.toString()).useSecretLogined ? "/open/system/notify-log" : "/api/system/notify-log";
+
   // 配置
   get configSamples => getIt<UserInfoViewModel>(instanceName: index.toString()).useSecretLogined ? "/open/configs/samples" : "/api/configs/samples";
 

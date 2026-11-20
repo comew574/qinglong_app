@@ -10,6 +10,7 @@ import 'package:qinglong_app/module/others/LogDelBean.dart';
 import 'package:qinglong_app/module/others/dependencies/dependency_bean.dart';
 import 'package:qinglong_app/module/others/login_log/login_log_bean.dart';
 import 'package:qinglong_app/module/others/scripts/script_bean.dart';
+import 'package:qinglong_app/module/others/notify_log/notify_log_bean.dart';
 import 'package:qinglong_app/module/others/task_log/task_log_bean.dart';
 import 'package:qinglong_app/module/others/update/check_update_bean.dart';
 import 'package:qinglong_app/module/task/task_bean.dart';
@@ -419,6 +420,15 @@ class Api {
   Future<HttpResponse<List<LoginLogBean>>> loginLog() async {
     return await getIt<Http>(instanceName: index.toString()).get<List<LoginLogBean>>(
       getIt<Url>(instanceName: index.toString()).loginLog,
+      null,
+    );
+  }
+
+  /// 通知审计日志（青龙 2.24.0+）
+  Future<HttpResponse<List<NotifyLogBean>>> notifyLog() async {
+    return await getIt<Http>(instanceName: index.toString())
+        .get<List<NotifyLogBean>>(
+      getIt<Url>(instanceName: index.toString()).notifyLog,
       null,
     );
   }

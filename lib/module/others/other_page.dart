@@ -739,6 +739,17 @@ class OtherPageState extends ConsumerState<OtherPage>
                               },
                             ),
                           ),
+                          Expanded(
+                            child: buildOtherFun2(
+                              "通知日志",
+                              CupertinoIcons.doc_text,
+                              () {
+                                Navigator.of(context).pushNamed(
+                                  Routes.routeNotifyLog,
+                                );
+                              },
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(
