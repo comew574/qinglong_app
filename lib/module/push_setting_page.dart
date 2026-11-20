@@ -137,77 +137,91 @@ class _PushSettingPageState extends ConsumerState<PushSettingPage> {
                                                 fontSize: 14,
                                               ),
                                             )
-                                          : DropdownButtonFormField<String>(
-                                              isExpanded: true,
-                                              elevation: 8,
-                                              // 弹层白底白字是硬伤，显式给底色和文字色
-                                              dropdownColor:
-                                                  const Color(0xFFFFFFFF),
-                                              icon: Icon(
-                                                CupertinoIcons
-                                                    .chevron_up_chevron_down,
-                                                size: 16,
-                                                color: ref
-                                                    .watch(themeProvider)
-                                                    .themeColor
-                                                    .title2Color(),
-                                              ),
-                                              value: e.items.any((it) =>
-                                                      it.value ==
-                                                      e.controller.text)
-                                                  ? e.controller.text
-                                                  : e.items.first.value,
-                                              items: e.items
-                                                  .map((it) =>
-                                                      DropdownMenuItem<String>(
-                                                        value: it.value,
-                                                        child: Text(
-                                                          it.label,
-                                                          style:
-                                                              const TextStyle(
-                                                            fontSize: 14,
-                                                            color: Color(
-                                                                0xFF333333),
+                                          : Builder(builder: (ddContext) {
+                                              final tc = ref
+                                                  .watch(themeProvider)
+                                                  .themeColor;
+                                              final isDark = Theme.of(ddContext)
+                                                      .brightness ==
+                                                  Brightness.dark;
+                                              // 配色跟随主题：
+                                              // 白色主题 -> 白底黑字；黑色主题 -> 黑底白字
+                                              final popBg = isDark
+                                                  ? const Color(0xFF1C1C1E)
+                                                  : const Color(0xFFFFFFFF);
+                                              final fg = tc.title2Color();
+                                              final borderColor = isDark
+                                                  ? const Color(0xFF3A3A3C)
+                                                  : const Color(0xffe4e4e4);
+
+                                              return DropdownButtonFormField<
+                                                  String>(
+                                                isExpanded: true,
+                                                elevation: 8,
+                                                dropdownColor: popBg,
+                                                icon: Icon(
+                                                  CupertinoIcons
+                                                      .chevron_up_chevron_down,
+                                                  size: 16,
+                                                  color: fg,
+                                                ),
+                                                value: e.items.any((it) =>
+                                                        it.value ==
+                                                        e.controller.text)
+                                                    ? e.controller.text
+                                                    : e.items.first.value,
+                                                items: e.items
+                                                    .map((it) =>
+                                                        DropdownMenuItem<
+                                                            String>(
+                                                          value: it.value,
+                                                          child: Text(
+                                                            it.label,
+                                                            style: TextStyle(
+                                                              fontSize: 14,
+                                                              color: fg,
+                                                            ),
                                                           ),
-                                                        ),
-                                                      ))
-                                                  .toList(),
-                                              decoration: InputDecoration(
-                                                isDense: true,
-                                                contentPadding:
-                                                    const EdgeInsets.symmetric(
-                                                  vertical: 10,
-                                                  horizontal: 10,
-                                                ),
-                                                border: OutlineInputBorder(
-                                                  borderSide:
-                                                      const BorderSide(
-                                                    color: Color(0xffe4e4e4),
-                                                    width: 1,
+                                                        ))
+                                                    .toList(),
+                                                decoration: InputDecoration(
+                                                  isDense: true,
+                                                  contentPadding:
+                                                      const EdgeInsets
+                                                              .symmetric(
+                                                    vertical: 10,
+                                                    horizontal: 10,
                                                   ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(4),
-                                                ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide:
-                                                      const BorderSide(
-                                                    color: Color(0xffe4e4e4),
-                                                    width: 1,
+                                                  border: OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: borderColor,
+                                                      width: 1,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            4),
                                                   ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(4),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: borderColor,
+                                                      width: 1,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            4),
+                                                  ),
                                                 ),
-                                              ),
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF333333),
-                                              ),
-                                              onChanged: (v) {
-                                                e.controller.text = v ?? '';
-                                                setState(() {});
-                                              },
-                                            ),
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: fg,
+                                                ),
+                                                onChanged: (v) {
+                                                  e.controller.text = v ?? '';
+                                                  setState(() {});
+                                                },
+                                              );
+                                            }),
                                       const SizedBox(
                                         height: 10,
                                       ),
