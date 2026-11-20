@@ -808,12 +808,13 @@ class OtherPageState extends ConsumerState<OtherPage>
     var response = await SingleAccountPageState.ofApi(context).logDel();
     String day = "";
 
-    if (response.success) {
-      if (response.bean != null && response.bean?.frequency != null) {
-        day = response.bean!.frequency!.toString();
-      } else {
-        day = response.bean?.info?.frequency.toString() ?? "";
-      }
+    if (response.success && response.bean != null) {
+      final bean = response.bean!;
+      // 青龙 2.23+：频率在 info.logRemoveFrequency（旧的 info.frequency 已废弃）
+      final value = bean.info?.logRemoveFrequency ??
+          bean.info?.frequency ??
+          bean.frequency;
+      day = value?.toString() ?? "";
     }
 
     TextEditingController controller = TextEditingController(text: day);
@@ -906,9 +907,12 @@ class OtherPageState extends ConsumerState<OtherPage>
             ),
             onPressed: () async {
               Navigator.of(context).pop();
-              commitLogDel(
-                int.tryParse(controller.text) ?? 1000,
-              );
+              final parsed = int.tryParse(controller.text.trim());
+              if (parsed == null || parsed < 0) {
+                "请输入有效天数".toast();
+                return;
+              }
+              commitLogDel(parsed);
             },
           ),
         ],
