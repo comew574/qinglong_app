@@ -21,9 +21,50 @@ subprojects {
                 compileSdk 36
                 if (project.name == 'app') {
                     ndkVersion = "28.2.13676358"
+                    // AGP 8 namespace 兜底：app 模块本身已有 namespace，无需处理
                 }
             }
         }
+    }
+}
+
+// ── AGP 8 namespace 兜底：老插件（如 flutter_displaymode 0.4.1）没声明 namespace，
+//    AGP 8+ 会直接失败。这里从 AndroidManifest.xml 的 package 属性推导，兜底补上。
+//    不改动 pub-cache 里的第三方源码，避免污染缓存。
+subprojects { project ->
+    if (project.name == 'app') return
+    project.pluginManager.withPlugin('com.android.library') {
+        def androidExt = project.extensions.findByName('android')
+        if (androidExt == null) return
+
+        def hasNs = false
+        try {
+            def ns = androidExt.namespace
+            hasNs = ns != null && !ns.toString().trim().isEmpty()
+        } catch (Exception ignored) {
+            hasNs = false
+        }
+        if (hasNs) return
+
+        String derived = null
+        try {
+            def manifest = project.file('src/main/AndroidManifest.xml')
+            if (manifest.exists()) {
+                def xml = new groovy.xml.XmlSlurper().parse(manifest)
+                def pkg = xml.@package.text()
+                if (pkg != null && !pkg.trim().isEmpty()) derived = pkg.trim()
+            }
+        } catch (Exception ignored) { }
+
+        if (derived == null || derived.isEmpty()) {
+            derived = project.group.toString()
+        }
+        if (derived == null || derived.isEmpty() || derived == 'unspecified') {
+            derived = 'work.master.qinglongapp.' + project.name.replaceAll('[^A-Za-z0-9]', '_')
+        }
+
+        println "[namespace-fix] ${project.name} -> ${derived}"
+        androidExt.namespace = derived
     }
 }
 
