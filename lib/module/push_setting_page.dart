@@ -99,6 +99,7 @@ class _PushSettingPageState extends ConsumerState<PushSettingPage> {
                         value: current,
                         onChanged: (value) {
                           current = value!;
+                          _applyDropdownDefaults(current!);
                           setState(() {});
                         },
                       ),
@@ -137,16 +138,38 @@ class _PushSettingPageState extends ConsumerState<PushSettingPage> {
                                               ),
                                             )
                                           : DropdownButtonFormField<String>(
+                                              isExpanded: true,
+                                              elevation: 8,
+                                              // 弹层白底白字是硬伤，显式给底色和文字色
+                                              dropdownColor:
+                                                  const Color(0xFFFFFFFF),
+                                              icon: Icon(
+                                                CupertinoIcons
+                                                    .chevron_up_chevron_down,
+                                                size: 16,
+                                                color: ref
+                                                    .watch(themeProvider)
+                                                    .themeColor
+                                                    .title2Color(),
+                                              ),
                                               value: e.items.any((it) =>
                                                       it.value ==
                                                       e.controller.text)
                                                   ? e.controller.text
-                                                  : null,
+                                                  : e.items.first.value,
                                               items: e.items
                                                   .map((it) =>
                                                       DropdownMenuItem<String>(
                                                         value: it.value,
-                                                        child: Text(it.label),
+                                                        child: Text(
+                                                          it.label,
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize: 14,
+                                                            color: Color(
+                                                                0xFF333333),
+                                                          ),
+                                                        ),
                                                       ))
                                                   .toList(),
                                               decoration: InputDecoration(
@@ -156,9 +179,29 @@ class _PushSettingPageState extends ConsumerState<PushSettingPage> {
                                                   vertical: 10,
                                                   horizontal: 10,
                                                 ),
+                                                border: OutlineInputBorder(
+                                                  borderSide:
+                                                      const BorderSide(
+                                                    color: Color(0xffe4e4e4),
+                                                    width: 1,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide:
+                                                      const BorderSide(
+                                                    color: Color(0xffe4e4e4),
+                                                    width: 1,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                ),
                                               ),
                                               style: const TextStyle(
                                                 fontSize: 14,
+                                                color: Color(0xFF333333),
                                               ),
                                               onChanged: (v) {
                                                 e.controller.text = v ?? '';
@@ -339,6 +382,18 @@ class _PushSettingPageState extends ConsumerState<PushSettingPage> {
     }
   }
 
+  /// 下拉字段为空时补默认值，避免"必填"校验把用户卡住。
+  void _applyDropdownDefaults(PushBean bean) {
+    for (final child in bean.children) {
+      if (child.items.isEmpty) continue;
+      final hasValue =
+          child.items.any((it) => it.value == child.controller.text);
+      if (!hasValue) {
+        child.controller.text = child.items.first.value;
+      }
+    }
+  }
+
   void onLazyLoad() async {
     var response = await SingleAccountPageState.ofApi(context).getNotifcation();
 
@@ -371,7 +426,13 @@ class _PushSettingPageState extends ConsumerState<PushSettingPage> {
       }
 
       for (var element in list[index].children) {
-        element.controller.text = json[element.key]?.toString() ?? "";
+        var raw = json[element.key]?.toString() ?? "";
+        // 下拉字段：空值或不在候选里时，回落到第一项，避免必填校验卡住
+        if (element.items.isNotEmpty &&
+            !element.items.any((it) => it.value == raw)) {
+          raw = element.items.first.value;
+        }
+        element.controller.text = raw;
       }
       current = list[index];
       setState(() {
