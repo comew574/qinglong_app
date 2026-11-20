@@ -14,6 +14,7 @@ import 'package:qinglong_app/module/others/change_account_page.dart';
 import 'package:qinglong_app/module/others/dependencies/add_dependency_page.dart';
 import 'package:qinglong_app/module/others/dependencies/dependency_page.dart';
 import 'package:qinglong_app/module/others/login_log/login_log_page.dart';
+import 'package:qinglong_app/module/others/log/log_page.dart';
 import 'package:qinglong_app/module/others/notify_log/notify_log_page.dart';
 import 'package:qinglong_app/module/others/scripts/script_add_page.dart';
 import 'package:qinglong_app/module/others/scripts/script_detail_page.dart';
@@ -41,6 +42,7 @@ class Routes {
   static const String routeConfigDetail = "/config/detail";
   static const String routeLoginLog = "/log/login";
   static const String routeNotifyLog = "/log/notify";
+  static const String routeLog = "/log";
   static const String routeTaskLog = "/log/task";
   static const String routeScript = "/script";
   static const String routeScriptDetail = "/script/detail";
@@ -105,6 +107,10 @@ class Routes {
       case routeNotifyLog:
         return CupertinoPageRoute(
           builder: (context) => const NotifyLogPage(),
+        );
+      case routeLog:
+        return CupertinoPageRoute(
+          builder: (context) => const LogPage(),
         );
       case routeTaskLog:
         if (settings.arguments != null) {

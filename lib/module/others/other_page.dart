@@ -706,16 +706,10 @@ class OtherPageState extends ConsumerState<OtherPage>
                           ),
                           Expanded(
                             child: buildOtherFun(
-                                "登录日志", "assets/images/icon_login_icon.png",
-                                () {
-                              if (SingleAccountPageState.ofUserInfo(context)
-                                  .useSecretLogined) {
-                                "使用client_id方式登录无法获取登录日志".toast();
-                              } else {
-                                Navigator.of(context).pushNamed(
-                                  Routes.routeLoginLog,
-                                );
-                              }
+                                "日志", "assets/images/icon_login_icon.png", () {
+                              Navigator.of(context).pushNamed(
+                                Routes.routeLog,
+                              );
                             }),
                           ),
                           Expanded(
@@ -739,17 +733,7 @@ class OtherPageState extends ConsumerState<OtherPage>
                               },
                             ),
                           ),
-                          Expanded(
-                            child: buildOtherFun2(
-                              "通知日志",
-                              CupertinoIcons.doc_text,
-                              () {
-                                Navigator.of(context).pushNamed(
-                                  Routes.routeNotifyLog,
-                                );
-                              },
-                            ),
-                          ),
+
                         ],
                       ),
                       const SizedBox(
