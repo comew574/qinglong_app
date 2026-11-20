@@ -142,11 +142,27 @@ class QlAppState extends ConsumerState<QlApp> with WidgetsBindingObserver {
   void initState() {
     textScaleFactor = SpUtil.getDouble(spTextScaleFactor, defValue: 1.0);
     super.initState();
+    // 注册生命周期/亮度观察者：否则 didChangePlatformBrightness 永不触发，
+    // "跟随系统"只在启动时生效一次，系统切换深色后 App 不跟着变。
+    WidgetsBinding.instance.addObserver(this);
     if (Platform.isAndroid) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         fetchAll();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// 系统深色/浅色切换时回调（仅"跟随系统"模式下真正生效）
+  @override
+  void didChangePlatformBrightness() {
+    super.didChangePlatformBrightness();
+    ref.read(themeProvider.notifier).changeThemeWithSystemStatus();
   }
 
   Future<void> fetchAll() async {
@@ -174,8 +190,16 @@ class QlAppState extends ConsumerState<QlApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final themeVm = ref.watch<ThemeViewModel>(themeProvider);
+    // 把 platformBrightness 锁定成"当前所选主题"的亮度：
+    // 选白色主题就不再受系统深色影响（反之亦然）；
+    // 只有"跟随系统"时，themeMode 本身已随系统更新，这里自然跟着变。
+    final isDarkTheme = themeVm.themeMode == modeDark;
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      // theme 已自带正确 brightness，固定 light 可避免 MaterialApp 再按系统挑主题
+      themeMode: ThemeMode.light,
       title: "青龙客户端",
       locale: const Locale('zh', 'CN'),
       navigatorKey: navigatorState,
@@ -188,9 +212,12 @@ class QlAppState extends ConsumerState<QlApp> with WidgetsBindingObserver {
         EasyLoading.instance.indicatorWidget = const LoadingWidget(
           color: Colors.white,
         );
+        // platformBrightness 已在 build 顶部锁定为"当前所选主题"的亮度
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
             textScaleFactor: textScaleFactor,
+            platformBrightness:
+                isDarkTheme ? Brightness.dark : Brightness.light,
           ),
           child: ScrollConfiguration(
             behavior: const ScrollPhysicsConfig(),
@@ -202,7 +229,7 @@ class QlAppState extends ConsumerState<QlApp> with WidgetsBindingObserver {
         Locale('zh', 'CN'),
         Locale('en', 'US'),
       ],
-      theme: ref.watch<ThemeViewModel>(themeProvider).currentTheme,
+      theme: themeVm.currentTheme,
       // 将常驻首页树与键盘 insets 隔离：键盘弹出时不再逐帧重建底部保活页面（修复输入卡顿）
       // push 出的二级页面不受影响，仍正常避让键盘
       home: MediaQuery.removeViewInsets(
